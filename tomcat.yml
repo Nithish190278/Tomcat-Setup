@@ -2,7 +2,7 @@
   become: yes
 
   tasks:
-    - name: install java for tomcat
+    - name: install java
       yum:
         name: java-1.8.0-openjdk
         state: present
@@ -11,7 +11,6 @@
       get_url:
         url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.111/bin/apache-tomcat-9.0.111.tar.gz
         dest: /opt/apache-tomcat-9.0.111.tar.gz
-        mode: '0644'
 
     - name: untar the apache tomcat file
       unarchive:
@@ -20,24 +19,25 @@
         remote_src: yes
         creates: /opt/apache-tomcat-9.0.111
 
-    - name: rename the tomcat folder
+    - name: rename the tomcat
       command: mv /opt/apache-tomcat-9.0.111 /opt/tomcat
       args:
         creates: /opt/tomcat
+      tags: abc
 
-    - name: set roles in tomcat-users.xml file
+    - name: set roles in tomcat-users.xml
       template:
         src: tomcat-users.xml
         dest: /opt/tomcat/conf/tomcat-users.xml
       notify: restart tomcat
 
-    - name: remove access restriction in context.xml
+    - name: remove restriction in context.xml
       template:
         src: context.xml
         dest: /opt/tomcat/webapps/manager/META-INF/context.xml
       notify: restart tomcat
 
-    - name: start the tomcat server
+    - name: start tomcat
       command: /opt/tomcat/bin/startup.sh
       args:
         creates: /opt/tomcat/logs/catalina.out
@@ -45,3 +45,4 @@
   handlers:
     - name: restart tomcat
       command: /opt/tomcat/bin/shutdown.sh && /opt/tomcat/bin/startup.sh
+
