@@ -1,8 +1,9 @@
-- hosts: tomcat_servers
+- hosts: localhost
+  connection: local
   become: yes
 
   tasks:
-    - name: install java
+    - name: install java for tomcat
       yum:
         name: java-1.8.0-openjdk
         state: present
@@ -10,39 +11,38 @@
     - name: download tomcat from dlcdn
       get_url:
         url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.111/bin/apache-tomcat-9.0.111.tar.gz
-        dest: /opt/apache-tomcat-9.0.111.tar.gz
+        dest: /root/apache-tomcat-9.0.111.tar.gz
 
     - name: untar the apache tomcat file
       unarchive:
-        src: /opt/apache-tomcat-9.0.111.tar.gz
-        dest: /opt
+        src: /root/apache-tomcat-9.0.111.tar.gz
+        dest: /root
         remote_src: yes
-        creates: /opt/apache-tomcat-9.0.111
+        creates: /root/apache-tomcat-9.0.111
 
-    - name: rename the tomcat
-      command: mv /opt/apache-tomcat-9.0.111 /opt/tomcat
+    - name: rename the tomcat folder
+      command: mv /root/apache-tomcat-9.0.111 /root/tomcat
       args:
-        creates: /opt/tomcat
+        creates: /root/tomcat
       tags: abc
 
-    - name: set roles in tomcat-users.xml
+    - name: set roles in tomcat-users.xml file
       template:
         src: tomcat-users.xml
-        dest: /opt/tomcat/conf/tomcat-users.xml
+        dest: /root/tomcat/conf/tomcat-users.xml
       notify: restart tomcat
 
-    - name: remove restriction in context.xml
+    - name: remove access restriction in context.xml
       template:
         src: context.xml
-        dest: /opt/tomcat/webapps/manager/META-INF/context.xml
+        dest: /root/tomcat/webapps/manager/META-INF/context.xml
       notify: restart tomcat
 
-    - name: start tomcat
-      command: /opt/tomcat/bin/startup.sh
+    - name: start the tomcat server
+      command: /root/tomcat/bin/startup.sh
       args:
-        creates: /opt/tomcat/logs/catalina.out
+        creates: /root/tomcat/logs/catalina.out
 
   handlers:
     - name: restart tomcat
-      command: /opt/tomcat/bin/shutdown.sh && /opt/tomcat/bin/startup.sh
-
+      command: /root/tomcat/bin/shutdown.sh && /root/tomcat/bin/startup.sh
