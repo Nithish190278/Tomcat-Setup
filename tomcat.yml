@@ -3,46 +3,36 @@
   become: yes
 
   tasks:
-    - name: install java for tomcat
-      yum:
-        name: java-1.8.0-openjdk
-        state: present
-
-    - name: download tomcat from dlcdn
+    - name: Download Tomcat
       get_url:
         url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.111/bin/apache-tomcat-9.0.111.tar.gz
         dest: /root/apache-tomcat-9.0.111.tar.gz
 
-    - name: untar the apache tomcat file
+    - name: Extract Tomcat
       unarchive:
         src: /root/apache-tomcat-9.0.111.tar.gz
-        dest: /root
+        dest: /root/
         remote_src: yes
-        creates: /root/apache-tomcat-9.0.111
 
-    - name: rename the tomcat folder
+    - name: Rename Tomcat directory
       command: mv /root/apache-tomcat-9.0.111 /root/tomcat
       args:
         creates: /root/tomcat
-      tags: abc
 
-    - name: set roles in tomcat-users.xml file
+    - name: Install Java 8
+      yum:
+        name: java-1.8.0-openjdk
+        state: present
+
+    - name: Configure tomcat users
       template:
         src: tomcat-users.xml
         dest: /root/tomcat/conf/tomcat-users.xml
-      notify: restart tomcat
 
-    - name: remove access restriction in context.xml
+    - name: Configure manager context
       template:
         src: context.xml
         dest: /root/tomcat/webapps/manager/META-INF/context.xml
-      notify: restart tomcat
 
-    - name: start the tomcat server
-      command: /root/tomcat/bin/startup.sh
-      args:
-        creates: /root/tomcat/logs/catalina.out
-
-  handlers:
-    - name: restart tomcat
-      command: /root/tomcat/bin/shutdown.sh && /root/tomcat/bin/startup.sh
+    - name: Start Tomcat
+      shell: nohup /root/tomcat/bin/startup.sh
